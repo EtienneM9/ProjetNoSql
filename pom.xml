@@ -221,6 +221,12 @@
 			</exclusions>
 		</dependency>
 
+		  <dependency>
+                <groupId>org.eclipse.rdf4j</groupId>
+                <artifactId>rdf4j-rio-api</artifactId>
+                <version>4.3.9</version>
+            </dependency>
+
 		<!-- TESTS UNITAIRES -->
 		<dependency>
 			<groupId>junit</groupId>
