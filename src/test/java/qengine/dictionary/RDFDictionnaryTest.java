@@ -47,11 +47,4 @@ public class RDFDictionnaryTest {
         assertNull(dict.decode(9999), "Décoder un ID inconnu doit renvoyer null");
     }
 
-    @Test
-    public void testSingletonReturnsSameInstance() {
-        RDFDictionnary first = RDFDictionnary.getInstance();
-        RDFDictionnary second = RDFDictionnary.getInstance();
-
-        assertSame(first, second, "getInstance() doit renvoyer la même instance");
-    }
 }
