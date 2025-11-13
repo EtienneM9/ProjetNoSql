@@ -4,17 +4,18 @@ import fr.boreal.model.logicalElements.api.Substitution;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 public class RDFGiantTable implements RDFStorage {
 
-
+    private List<RDFTriple> triples = new ArrayList<>();
 
     @Override
     public boolean add(RDFTriple t) {
-        return false;
+        return triples.add(t);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public long size() {
-        return 0;
+        return triples.size();
     }
 
     @Override
