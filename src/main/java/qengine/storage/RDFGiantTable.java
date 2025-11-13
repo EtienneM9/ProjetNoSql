@@ -1,6 +1,7 @@
 package qengine.storage;
 
 import fr.boreal.model.logicalElements.api.Substitution;
+import fr.boreal.model.logicalElements.api.Term;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 
@@ -18,8 +19,14 @@ public class RDFGiantTable implements RDFStorage {
         return triples.add(t);
     }
 
+
+
     @Override
     public Iterator<Substitution> match(RDFTriple a) {
+        List<Substitution> results = new ArrayList<>();
+        for (RDFTriple triple : triples) {
+            //Substitution substitution =
+        }
         return null;
     }
 
@@ -30,6 +37,12 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public long howMany(RDFTriple a) {
+        Term subject = a.getTripleSubject();
+        Term predicate = a.getTriplePredicate();
+        Term object =  a.getTripleObject();
+        triples.forEach(triple -> {
+            //TODO
+        });
         return 0;
     }
 
@@ -40,6 +53,6 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public Collection<RDFTriple> getAtoms() {
-        return List.of();
+        return triples;
     }
 }
