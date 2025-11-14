@@ -1,5 +1,6 @@
 package qengine.storage;
 
+import fr.boreal.model.logicalElements.api.Literal;
 import fr.boreal.model.logicalElements.api.Substitution;
 import fr.boreal.model.logicalElements.api.Term;
 import fr.boreal.model.logicalElements.api.Variable;
@@ -43,30 +44,32 @@ public class RDFGiantTable implements RDFStorage {
     }*/
 
     @Override
-    public Iterator<Substitution> match(RDFTriple a) {
+    public Iterator<Substitution> match(RDFTriple pattern) {
         List<Substitution> results = new ArrayList<>();
-        for (RDFTriple triple : triples) {
-            Term[] targets = triple.getTerms();
-            Term[] myTerms = a.getTerms();
-            boolean flag = false;
-            ArrayList<String> substTargets = new ArrayList<>();
-            for (int i = 0; i<3; i++){
-                Substitution
-                Term thisTerm = myTerms[i];
-                switch (thisTerm.getClass().getSimpleName()) {
-                    case "Literal":
-                        if (!(targets[i] ==thisTerm)){
-                            flag = true;
-                            break;
-                        }
-                    case "Variable":
 
-                    default:
-                        break;
+        for (RDFTriple triple : triples) {
+            Term[] dataTerms = triple.getTerms();
+            Term[] patternTerms = pattern.getTerms();
+            Substitution sub = new SubstitutionImpl();
+
+            boolean matches = true;
+            for (int i = 0; i < 3; i++) {
+                Term p = patternTerms[i];
+                Term d = dataTerms[i];
+
+                if (p instanceof Variable) {
+                    sub.add((Variable) p, d);
+                } else if (!p.equals(d)) {
+                    matches = false;
+                    break;
                 }
             }
-            if (flag) break;
+
+            if (matches) {
+                results.add(sub);
+            }
         }
+
         return results.iterator();
     }
 
@@ -77,13 +80,12 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public long howMany(RDFTriple a) {
-        Term subject = a.getTripleSubject();
-        Term predicate = a.getTriplePredicate();
-        Term object =  a.getTripleObject();
-        triples.forEach(triple -> {
-            //TODO
-        });
-        return 0;
+        Iterator<Substitution> it = match(a);
+        int res = 0;
+        while (it.hasNext()) {
+            it.next();
+        }
+        return res;
     }
 
     @Override
