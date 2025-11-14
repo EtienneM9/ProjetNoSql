@@ -66,11 +66,13 @@ public class RDFHexaStore implements RDFStorage {
 
     @Override
     public Iterator<Substitution> match(RDFTriple triple) {
+
         throw new NotImplementedException();
     }
 
     @Override
     public Iterator<Substitution> match(StarQuery q) {
+        //TODO
         throw new NotImplementedException();
     }
 
