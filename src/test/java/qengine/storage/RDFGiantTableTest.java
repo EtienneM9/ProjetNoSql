@@ -66,16 +66,19 @@ public class RDFGiantTableTest {
         assertEquals(2, giantTable.size());
     }
 
+
     @Test
     public void MatchTripleAndHowManyTest(){
         RDFGiantTable giantTable = new RDFGiantTable();
         RDFTriple rdfAtom1 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1);
         RDFTriple rdfAtom2 = new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_1);
+        RDFTriple rdfAtom3 = new RDFTriple(SUBJECT_2, PREDICATE_2, OBJECT_2);
 
         RDFTriple pattern1 = new RDFTriple(VAR_X, PREDICATE_1, OBJECT_1);
 
         giantTable.add(rdfAtom1);
         giantTable.add(rdfAtom2);
+        giantTable.add(rdfAtom3);
 
         Iterator<Substitution> substitutionIterator = giantTable.match(pattern1);
         assertEquals(2,giantTable.howMany(pattern1));
@@ -87,5 +90,6 @@ public class RDFGiantTableTest {
 
         assertEquals(substitutionIterator.next(),substitution);
         assertEquals(substitutionIterator.next(),substitution2);
+        assertFalse(substitutionIterator.hasNext());
     }
 }
