@@ -1,5 +1,7 @@
 package qengine.dictionnary;
 
+import fr.boreal.model.logicalElements.api.Term;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,8 +9,8 @@ public class RDFDictionnary {
     //Singleton pour garantir la cohérence entre plusieurs HexaStore
     private static RDFDictionnary instance = null;
 
-    private Map<String, Integer> resourceToId = new HashMap<>();
-    private Map<Integer, String> idToResource = new HashMap<>();
+    private Map<Term, Integer> resourceToId = new HashMap<>();
+    private Map<Integer, Term> idToResource = new HashMap<>();
     private int nextId = 0;
 
     private RDFDictionnary() {}
@@ -17,7 +19,7 @@ public class RDFDictionnary {
         return instance == null ? new RDFDictionnary() : instance;
     }
 
-    public int encode(String resource){
+    public int encode(Term resource){
         //TO TEST
         return resourceToId.computeIfAbsent(resource, r -> {
             int id = nextId++;
@@ -26,7 +28,7 @@ public class RDFDictionnary {
         });
     }
 
-    public String decode(int id){
+    public Term decode(int id){
         //TO TEST
         return idToResource.get(id);
     }
