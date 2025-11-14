@@ -22,27 +22,6 @@ public class RDFGiantTable implements RDFStorage {
         return triples.add(t);
     }
 
-    /*public Substitution matchTriple(RDFTriple pattern, RDFTriple data){
-        Substitution substitution = new SubstitutionImpl();
-
-        Term[] patternTerms = pattern.getTerms();
-        Term[] dataTerms = data.getTerms();
-
-        for (int i = 0; i < patternTerms.length; i++) {
-            Term p = patternTerms[i];
-            Term d = dataTerms[i];
-
-            if (p instanceof Variable) {
-                substitution.put((Variable) p, d);
-            } else if (!p.equals(d)) {
-                // constante différente => pas de match
-                return null;
-            }
-        }
-
-        return substitution;
-    }*/
-
     @Override
     public Iterator<Substitution> match(RDFTriple pattern) {
         List<Substitution> results = new ArrayList<>();
@@ -83,6 +62,7 @@ public class RDFGiantTable implements RDFStorage {
         Iterator<Substitution> it = match(a);
         int res = 0;
         while (it.hasNext()) {
+            res++;
             it.next();
         }
         return res;
