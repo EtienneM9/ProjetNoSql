@@ -1,25 +1,55 @@
 package qengine.storage;
 
+import fr.boreal.model.logicalElements.api.Literal;
 import fr.boreal.model.logicalElements.api.Substitution;
+import fr.boreal.model.logicalElements.api.Term;
+import fr.boreal.model.logicalElements.api.Variable;
+import fr.boreal.model.logicalElements.impl.SubstitutionImpl;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 public class RDFGiantTable implements RDFStorage {
 
-
+    private List<RDFTriple> triples = new ArrayList<>();
 
     @Override
     public boolean add(RDFTriple t) {
-        return false;
+        return triples.add(t);
     }
 
     @Override
-    public Iterator<Substitution> match(RDFTriple a) {
-        return null;
+    public Iterator<Substitution> match(RDFTriple pattern) {
+        List<Substitution> results = new ArrayList<>();
+
+        for (RDFTriple triple : triples) {
+            Term[] dataTerms = triple.getTerms();
+            Term[] patternTerms = pattern.getTerms();
+            Substitution sub = new SubstitutionImpl();
+
+            boolean matches = true;
+            for (int i = 0; i < 3; i++) {
+                Term p = patternTerms[i];
+                Term d = dataTerms[i];
+
+                if (p instanceof Variable) {
+                    sub.add((Variable) p, d);
+                } else if (!p.equals(d)) {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches) {
+                results.add(sub);
+            }
+        }
+
+        return results.iterator();
     }
 
     @Override
@@ -29,16 +59,22 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public long howMany(RDFTriple a) {
-        return 0;
+        Iterator<Substitution> it = match(a);
+        int res = 0;
+        while (it.hasNext()) {
+            res++;
+            it.next();
+        }
+        return res;
     }
 
     @Override
     public long size() {
-        return 0;
+        return triples.size();
     }
 
     @Override
     public Collection<RDFTriple> getAtoms() {
-        return List.of();
+        return triples;
     }
 }
