@@ -1,6 +1,7 @@
 package qengine.dictionnary;
 
 import fr.boreal.model.logicalElements.api.Term;
+import fr.boreal.model.logicalElements.api.Variable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +17,17 @@ public class RDFDictionnary {
     private RDFDictionnary() {}
 
     public static RDFDictionnary getInstance() {
-        return instance == null ? new RDFDictionnary() : instance;
+        if (instance == null) {
+            instance = new RDFDictionnary();
+        }
+        return instance;
     }
 
     public int encode(Term resource){
         //TO TEST
+        if (resource instanceof Variable){
+            return -1;
+        }
         return resourceToId.computeIfAbsent(resource, r -> {
             int id = nextId++;
             idToResource.put(id, r);
