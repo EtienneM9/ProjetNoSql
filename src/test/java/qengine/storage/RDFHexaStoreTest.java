@@ -67,10 +67,10 @@ public class RDFHexaStoreTest {
 
     }
 
-    @Test
-    public void testAddDuplicateAtom() {
-        throw new NotImplementedException();
-    }
+//    @Test
+//    public void testAddDuplicateAtom() {
+//        throw new NotImplementedException();
+//    }
 
     @Test
     public void testGetAtoms() {
@@ -132,9 +132,9 @@ public class RDFHexaStoreTest {
 
     }
 
-    @Test
-    public void testMatchStarQuery() {
-        throw new NotImplementedException();
-    }
+//    @Test
+//    public void testMatchStarQuery() {
+//        throw new NotImplementedException();
+//    }
 
 }

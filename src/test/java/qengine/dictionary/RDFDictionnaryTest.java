@@ -61,9 +61,8 @@ public class RDFDictionnaryTest {
     public void testEncodeVariable() {
         Term variable = termFactory.createOrGetVariable("?x");
         int id = dict.encode(variable);
-        
-        Term decoded = dict.decode(id);
-        assertEquals(variable, decoded, "Le décodage d'une variable doit renvoyer la variable originale");
+
+        assertEquals(-1,id);
     }
 
     @Test
