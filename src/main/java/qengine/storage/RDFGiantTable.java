@@ -5,40 +5,50 @@ import fr.boreal.model.logicalElements.api.Substitution;
 import fr.boreal.model.logicalElements.api.Term;
 import fr.boreal.model.logicalElements.api.Variable;
 import fr.boreal.model.logicalElements.impl.SubstitutionImpl;
+import qengine.dictionnary.RDFDictionnary;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class RDFGiantTable implements RDFStorage {
 
-    private List<RDFTriple> triples = new ArrayList<>();
+    private List<List<Integer>> triples = new ArrayList<>();
+    private RDFDictionnary dictionnary = RDFDictionnary.getInstance();
 
     @Override
     public boolean add(RDFTriple t) {
-        return triples.add(t);
+        //TO TEST
+        Term[] terms = t.getTerms();
+        List<Integer> newTriple = new ArrayList<>();
+        for (Term term : terms) {
+            newTriple.add(dictionnary.encode(term));
+        }
+        return triples.add(newTriple);
     }
 
     @Override
     public Iterator<Substitution> match(RDFTriple pattern) {
         List<Substitution> results = new ArrayList<>();
+        Term[] terms = pattern.getTerms();
 
-        for (RDFTriple triple : triples) {
-            Term[] dataTerms = triple.getTerms();
-            Term[] patternTerms = pattern.getTerms();
+        List<Integer> encodedPattern = new ArrayList<>();
+        for (Term term : pattern.getTerms()) {
+            encodedPattern.add(dictionnary.encode(term));
+        }
+
+        for (List<Integer> triple : triples) {
             Substitution sub = new SubstitutionImpl();
 
             boolean matches = true;
             for (int i = 0; i < 3; i++) {
-                Term p = patternTerms[i];
-                Term d = dataTerms[i];
+                int p = encodedPattern.get(i);
+                int d = triple.get(i);
 
-                if (p instanceof Variable) {
-                    sub.add((Variable) p, d);
-                } else if (!p.equals(d)) {
+                if (p == -1) {
+                    Variable var = (Variable) terms[i];
+                    sub.add(var, dictionnary.decode(d));
+                } else if (p != d) {
                     matches = false;
                     break;
                 }
@@ -75,6 +85,12 @@ public class RDFGiantTable implements RDFStorage {
 
     @Override
     public Collection<RDFTriple> getAtoms() {
-        return triples;
+        List<RDFTriple> result = new ArrayList<>();
+        for (List<Integer> triple : triples) {
+            result.add(new RDFTriple(dictionnary.decode(triple.get(0)),
+                    dictionnary.decode(triple.get(1)),
+                    dictionnary.decode(triple.get(2))));
+        }
+        return result;
     }
 }
