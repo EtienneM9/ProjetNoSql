@@ -17,7 +17,10 @@ public class RDFDictionnary {
     private RDFDictionnary() {}
 
     public static RDFDictionnary getInstance() {
-        return instance == null ? new RDFDictionnary() : instance;
+        if (instance == null) {
+            instance = new RDFDictionnary();
+        }
+        return instance;
     }
 
     public int encode(Term resource){
