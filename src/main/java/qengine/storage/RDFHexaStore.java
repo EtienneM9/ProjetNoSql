@@ -86,7 +86,8 @@ public class RDFHexaStore implements RDFStorage {
         //séection de l'index selon les SOP connus
         //----------- CAS 1 avec trois liés -----------------
         if(sIsBound && oIsBound && pIsBound){
-            if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(sId)){
+            System.out.println(sId + " " + oId + " " + pId);
+            if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(oId)){
                 //Ici le triplet exact existe mais pas de substitution à créer car pasde variable.
                 //On renvoie alors une substituion vide
                 substitutions.add(new SubstitutionImpl());
@@ -108,7 +109,7 @@ public class RDFHexaStore implements RDFStorage {
             }
         }
         else if(oIsBound && pIsBound){
-            if(OPS.containsKey(oId) && OPS.get(sId).containsKey(pId)){
+            if(OPS.containsKey(oId) && OPS.get(oId).containsKey(pId)){
                 //Ici, on connait S et P, mais il faut trouver les différentes substituions pour o
                 findMatchesAndSubstitute(substitutions, s, p, o, OPS.get(oId).get(pId), true, null, null);
             }
@@ -138,12 +139,12 @@ public class RDFHexaStore implements RDFStorage {
             }
         }
         else if(oIsBound){
-            if (OPS.containsKey(pId)) {
+            if (OPS.containsKey(oId)) {
                 for (var oEntry : OPS.get(oId).entrySet()) {
                     Term predMatch = dict.decode(oEntry.getKey());
                     for (int objId : oEntry.getValue()) {
                         Term objMatch = dict.decode(objId);
-                        createAndAddSubstitution(substitutions, s, p, o, predMatch, objMatch, o);
+                        createAndAddSubstitution(substitutions, s, p, o, objMatch, predMatch, o);
                     }
                 }
             }
