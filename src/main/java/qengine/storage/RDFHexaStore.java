@@ -19,12 +19,12 @@ import java.util.*;
  */
 public class RDFHexaStore implements RDFStorage {
 
-    Map<Integer, Map<Integer, List<Integer>>> SPO;
-    Map<Integer, Map<Integer, List<Integer>>> SOP;
-    Map<Integer, Map<Integer, List<Integer>>> POS;
-    Map<Integer, Map<Integer, List<Integer>>> PSO;
-    Map<Integer, Map<Integer, List<Integer>>> OPS;
-    Map<Integer, Map<Integer, List<Integer>>> OSP;
+    public Map<Integer, Map<Integer, List<Integer>>> SPO = new HashMap<>();
+    public Map<Integer, Map<Integer, List<Integer>>> SOP = new HashMap<>();
+    public Map<Integer, Map<Integer, List<Integer>>> POS = new HashMap<>();
+    public Map<Integer, Map<Integer, List<Integer>>> PSO = new HashMap<>();
+    public Map<Integer, Map<Integer, List<Integer>>> OPS = new HashMap<>();
+    public Map<Integer, Map<Integer, List<Integer>>> OSP = new HashMap<>();
 
     private final RDFDictionnary dict = RDFDictionnary.getInstance();
     private TermFactory termFactory;
@@ -76,18 +76,18 @@ public class RDFHexaStore implements RDFStorage {
         Term p = triple.getTriplePredicate();
 
         int sId = s.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTripleSubject().toString()));
-        int oId = s.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
-        int pId = s.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
+        int oId = o.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
+        int pId = p.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
 
-        boolean sIsBound = sId == -1;
-        boolean oIsBound = oId == -1;
-        boolean pIsBound = pId == -1;
+        boolean sIsBound = sId != -1;
+        boolean oIsBound = oId != -1;
+        boolean pIsBound = pId != -1;
 
         //séection de l'index selon les SOP connus
         //----------- CAS 1 avec trois liés -----------------
         if(sIsBound && oIsBound && pIsBound){
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(sId)){
-                //Ici le triplet exacteexiste mais pas de substitution à créer car pasde variable.
+                //Ici le triplet exact existe mais pas de substitution à créer car pasde variable.
                 //On renvoie alors une substituion vide
                 substitutions.add(new SubstitutionImpl());
             }
@@ -96,6 +96,7 @@ public class RDFHexaStore implements RDFStorage {
         //------ CAS 2 avec deux liés -------------------
         else if(sIsBound && pIsBound){
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId)){
+                System.out.println(sId + " " + pId + " " + sIsBound);
                 //Ici, on connait S et P, mais il faut trouver les différentes substituions pour o
                 findMatchesAndSubstitute(substitutions, s, p, o, SPO.get(sId).get(pId), null, null, true);
             }
@@ -103,13 +104,13 @@ public class RDFHexaStore implements RDFStorage {
         else if(sIsBound && oIsBound){
             if(SOP.containsKey(sId) && SOP.get(sId).containsKey(oId)){
                 //Ici, on connait S et O, mais il faut trouver les différentes substituions pour o
-                findMatchesAndSubstitute(substitutions, s, p, o, SPO.get(sId).get(oId), null, true, null);
+                findMatchesAndSubstitute(substitutions, s, p, o, SOP.get(sId).get(oId), null, true, null);
             }
         }
         else if(oIsBound && pIsBound){
-            if(OPS.containsKey(sId) && OPS.get(sId).containsKey(oId)){
+            if(OPS.containsKey(oId) && OPS.get(sId).containsKey(pId)){
                 //Ici, on connait S et P, mais il faut trouver les différentes substituions pour o
-                findMatchesAndSubstitute(substitutions, s, p, o, SPO.get(sId).get(oId), true, null, null);
+                findMatchesAndSubstitute(substitutions, s, p, o, OPS.get(oId).get(pId), true, null, null);
             }
         }
 
@@ -151,7 +152,7 @@ public class RDFHexaStore implements RDFStorage {
         //------------- CAS 4 avec aucun lié -------------------
 
         else{
-            //On sait un scan complet pour trouver les substitutions adapté
+            //On fait un scan complet pour trouver les substitutions adapté
             for (var sEntry : SPO.entrySet()) {
                 Term subjMatch = dict.decode(sEntry.getKey());
                 for (var pEntry : sEntry.getValue().entrySet()) {
@@ -164,7 +165,7 @@ public class RDFHexaStore implements RDFStorage {
             }
         }
 
-        throw new NotImplementedException();
+        return substitutions.iterator();
     }
 
     /**
@@ -177,7 +178,27 @@ public class RDFHexaStore implements RDFStorage {
      * @param isPredicate La position non liée est-elle le Prédicat ?
      * @param isObject La position non liée est-elle l'Objet ?
      */
-    private void findMatchesAndSubstitute(List<Substitution> substitutions, Term qs, Term qp, Term qo, List<Integer> idsToDecode, Boolean isSubject, Boolean isPredicate, Boolean isObject) {}
+    private void findMatchesAndSubstitute(List<Substitution> substitutions, Term qs, Term qp, Term qo, List<Integer> idsToDecode, Boolean isSubject, Boolean isPredicate, Boolean isObject) {
+        // Pour le Cas 2, seule l'une des trois positions est non-liée.
+        Term bound1 = isSubject != null ? qs : (isPredicate != null ? qp : qo);
+        Term bound2 = isPredicate != null ? qp : (isObject != null ? qo : qs); // La troisième position restante
+
+        // Déterminer les termes liés pour la fonction d'aide
+        Term sMatch = isSubject != null ? null : qs;
+        Term pMatch = isPredicate != null ? null : qp;
+        Term oMatch = isObject != null ? null : qo;
+
+        for (int id : idsToDecode) {
+            Term unboundMatch = dict.decode(id);
+
+            // Déterminer quelle position reçoit le terme décodé
+            Term current_s = isSubject != null ? unboundMatch : sMatch;
+            Term current_p = isPredicate != null ? unboundMatch : pMatch;
+            Term current_o = isObject != null ? unboundMatch : oMatch;
+
+            createAndAddSubstitution(substitutions, qs, qp, qo, current_s, current_p, current_o);
+        }
+    }
 
     /**
      * Fonction d'aide pour créer et ajouter une Substitution à la liste.
@@ -185,7 +206,29 @@ public class RDFHexaStore implements RDFStorage {
      * @param qs, qp, qo Les termes de la requête (potentiellement des variables).
      * @param sMatch, pMatch, oMatch Les termes du triplet trouvé (Literal/Constant).
      */
-    private void createAndAddSubstitution(List<Substitution> substitutions, Term qs, Term qp, Term qo, Term sMatch, Term pMatch, Term oMatch) {}
+    private void createAndAddSubstitution(List<Substitution> substitutions, Term qs, Term qp, Term qo, Term sMatch, Term pMatch, Term oMatch) {
+        Substitution sub = new SubstitutionImpl();
+
+        // Vérifier et lier S
+        if (qs.isVariable()) {
+            sub.add((Variable) qs, sMatch);
+        }
+
+        // Vérifier et lier P
+        if (qp.isVariable()) {
+            // Note: Dans le cas général RDF, le prédicat est toujours un URI et non une variable,
+            // mais l'interface Term permet isVariable(), donc on supporte la substitution.
+            sub.add((Variable) qp, pMatch);
+        }
+
+        // Vérifier et lier O
+        if (qo.isVariable()) {
+            sub.add((Variable) qo, oMatch);
+        }
+
+        // La substitution est complète et prête à être ajoutée
+        substitutions.add(sub);
+    }
 
     @Override
     public Iterator<Substitution> match(StarQuery q) {
@@ -195,7 +238,12 @@ public class RDFHexaStore implements RDFStorage {
 
     @Override
     public long howMany(RDFTriple triple) {
-        throw new NotImplementedException();
+
+        Iterator<Substitution> matchedAtoms = this.match(triple);
+        List<Substitution> matchedList = new ArrayList<>();
+        matchedAtoms.forEachRemaining(matchedList::add);
+
+        return matchedList.size();
     }
 
     @Override

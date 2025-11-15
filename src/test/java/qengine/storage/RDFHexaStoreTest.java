@@ -56,7 +56,15 @@ public class RDFHexaStoreTest {
 
     @Test
     public void testAddRDFAtom() {
-        throw new NotImplementedException();
+
+        RDFHexaStore store = new RDFHexaStore();
+        RDFTriple rdfAtom1 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1);
+
+        assertTrue(store.add(rdfAtom1), "Les RDFAtoms devraient être ajoutés avec succès.");
+
+        Collection<RDFTriple> atoms = store.getAtoms();
+        assertTrue(atoms.contains(rdfAtom1), "La base devrait contenir le premier RDFAtom ajouté.");
+
     }
 
     @Test
@@ -65,9 +73,38 @@ public class RDFHexaStoreTest {
     }
 
     @Test
-    public void testSize() {
-        throw new NotImplementedException();
+    public void testGetAtoms() {
+        RDFHexaStore store = new RDFHexaStore();
+
+        RDFTriple atom1 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1);
+        RDFTriple atom2 = new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_2);
+        RDFTriple atom3 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_3);
+
+        store.add(atom1);
+        store.add(atom2);
+        store.add(atom3);
+
+        Collection<RDFTriple> la = store.getAtoms();
+        assertTrue(la.contains(atom1), "The store should conatins the atom1");
+        assertTrue(la.contains(atom2), "The store should conatins the atom2");
+        assertTrue(la.contains(atom3), "The store should conatins the atom3");
+
     }
+
+    @Test
+    public void howMany() {
+        RDFHexaStore store = new RDFHexaStore();
+        store.add(new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1)); // RDFAtom(subject1, triple, object1)
+        store.add(new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_2)); // RDFAtom(subject2, triple, object2)
+        store.add(new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_3)); // RDFAtom(subject1, triple, object3)
+
+        // Case 1
+        RDFTriple matchingAtom = new RDFTriple(SUBJECT_1, PREDICATE_1, VAR_X); // RDFAtom(subject1, predicate1, X)
+        long nbr = store.howMany(matchingAtom);
+
+        assertEquals(2, nbr, "There should be two matched RDFAtoms");
+    }
+
 
     @Test
     public void testMatchAtom() {
@@ -81,6 +118,8 @@ public class RDFHexaStoreTest {
         Iterator<Substitution> matchedAtoms = store.match(matchingAtom);
         List<Substitution> matchedList = new ArrayList<>();
         matchedAtoms.forEachRemaining(matchedList::add);
+        matchedList.forEach(System.out::println);
+
 
         Substitution firstResult = new SubstitutionImpl();
         firstResult.add(VAR_X, OBJECT_1);
@@ -91,8 +130,6 @@ public class RDFHexaStoreTest {
         assertTrue(matchedList.contains(secondResult), "Missing substitution: " + firstResult);
         assertTrue(matchedList.contains(secondResult), "Missing substitution: " + secondResult);
 
-        // Other cases
-        throw new NotImplementedException("This test must be completed");
     }
 
     @Test
@@ -100,5 +137,4 @@ public class RDFHexaStoreTest {
         throw new NotImplementedException();
     }
 
-    // Vos autres tests d'HexaStore ici
 }
