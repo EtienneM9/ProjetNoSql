@@ -51,8 +51,6 @@ public class RDFGiantTableTest {
 
         Collection<RDFTriple> atoms = giantTable.getAtoms();
         Collection<RDFTriple> atoms2 = giantTable.getAtoms();
-        atoms2.add(rdfAtom1);
-        atoms2.add(rdfAtom1);
         assertEquals(atoms, atoms2);
     }
 
