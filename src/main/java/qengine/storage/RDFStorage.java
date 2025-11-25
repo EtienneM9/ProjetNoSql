@@ -1,7 +1,9 @@
 package qengine.storage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import fr.boreal.model.logicalElements.api.Substitution;
@@ -40,7 +42,13 @@ public interface RDFStorage {
      * @param a atom
      * @return
      */
-    long howMany(RDFTriple a);
+    default long howMany(RDFTriple a){
+        Iterator<Substitution> matchedAtoms = this.match(a);
+        List<Substitution> matchedList = new ArrayList<>();
+        matchedAtoms.forEachRemaining(matchedList::add);
+
+        return matchedList.size();
+    };
 
 
     /**

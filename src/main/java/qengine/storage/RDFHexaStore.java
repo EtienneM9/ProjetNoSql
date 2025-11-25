@@ -27,6 +27,7 @@ public class RDFHexaStore implements RDFStorage {
     public Map<Integer, Map<Integer, List<Integer>>> OSP = new HashMap<>();
 
     private final RDFDictionnary dict = RDFDictionnary.getInstance();
+    private long size = 0;
     private TermFactory termFactory;
 
 
@@ -46,6 +47,8 @@ public class RDFHexaStore implements RDFStorage {
         addToIndex(OSP, o, s, p);
         addToIndex(OPS, o, p, s);
 
+        this.size++;
+
         return true;
 
     }
@@ -59,10 +62,7 @@ public class RDFHexaStore implements RDFStorage {
 
     @Override
     public long size() {
-        return SPO.values().stream()
-                .flatMap(m -> m.values().stream())
-                .mapToLong(List::size)
-                .sum();
+        return this.size;
     }
 
     @Override
@@ -238,12 +238,87 @@ public class RDFHexaStore implements RDFStorage {
 
     @Override
     public long howMany(RDFTriple triple) {
+        TermFactory termFactory = SameObjectTermFactory.instance();
 
-        Iterator<Substitution> matchedAtoms = this.match(triple);
-        List<Substitution> matchedList = new ArrayList<>();
-        matchedAtoms.forEachRemaining(matchedList::add);
+        Term s = triple.getTripleSubject();
+        Term o = triple.getTripleObject();
+        Term p = triple.getTriplePredicate();
 
-        return matchedList.size();
+        int sId = s.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTripleSubject().toString()));
+        int oId = o.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
+        int pId = p.isVariable() ? -1 : dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
+
+        boolean sIsBound = sId != -1;
+        boolean oIsBound = oId != -1;
+        boolean pIsBound = pId != -1;
+
+        //séection de l'index selon les SOP connus
+        //----------- CAS 1 avec trois liés -----------------
+        if(sIsBound && oIsBound && pIsBound){
+            System.out.println(sId + " " + oId + " " + pId);
+            if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(oId)){
+                return 1;
+            }
+            return 0;
+        }
+
+        //------ CAS 2 avec deux liés -------------------
+        else if(sIsBound && pIsBound){
+            if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId)){
+                return SPO.get(sId).get(pId).size();
+            }
+            return 0;
+        }
+        else if(sIsBound && oIsBound){
+            if(SOP.containsKey(sId) && SOP.get(sId).containsKey(oId)){
+                return SPO.get(sId).get(oId).size();
+            }
+            return 0;
+        }
+        else if(oIsBound && pIsBound){
+            if(OPS.containsKey(oId) && OPS.get(oId).containsKey(pId)){
+                return SPO.get(oId).get(pId).size();
+            }
+            return 0;
+        }
+
+        //------ CAS 3 avec un lié -------------------
+        else if(sIsBound){
+            if (SPO.containsKey(sId)) {
+                long c = 0;
+                for (List<Integer> obj : SPO.get(sId).values()) {
+                    c += obj.size();
+                }
+                return c;
+            }
+            return 0;
+        }
+        else if(pIsBound) {
+            if (SPO.containsKey(sId)) {
+                long c = 0;
+                for (List<Integer> obj : PSO.get(pId).values()) {
+                    c += obj.size();
+                }
+                return c;
+            }
+            return 0;
+        }
+        else if(oIsBound){
+            if (SPO.containsKey(sId)) {
+                long c = 0;
+                for (List<Integer> obj : OPS.get(oId).values()) {
+                    c += obj.size();
+                }
+                return c;
+            }
+            return 0;
+        }
+
+        //------------- CAS 4 avec aucun lié -------------------
+
+        else{
+            return this.size();
+        }
     }
 
     @Override
