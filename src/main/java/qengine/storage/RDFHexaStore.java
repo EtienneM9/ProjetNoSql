@@ -272,13 +272,13 @@ public class RDFHexaStore implements RDFStorage {
         }
         else if(sIsBound && oIsBound){
             if(SOP.containsKey(sId) && SOP.get(sId).containsKey(oId)){
-                return SPO.get(sId).get(oId).size();
+                return SOP.get(sId).get(oId).size();
             }
             return 0;
         }
         else if(oIsBound && pIsBound){
             if(OPS.containsKey(oId) && OPS.get(oId).containsKey(pId)){
-                return SPO.get(oId).get(pId).size();
+                return OPS.get(oId).get(pId).size();
             }
             return 0;
         }
@@ -295,7 +295,7 @@ public class RDFHexaStore implements RDFStorage {
             return 0;
         }
         else if(pIsBound) {
-            if (SPO.containsKey(sId)) {
+            if (PSO.containsKey(pId)) {
                 long c = 0;
                 for (List<Integer> obj : PSO.get(pId).values()) {
                     c += obj.size();
@@ -305,7 +305,7 @@ public class RDFHexaStore implements RDFStorage {
             return 0;
         }
         else if(oIsBound){
-            if (SPO.containsKey(sId)) {
+            if (OPS.containsKey(oId)) {
                 long c = 0;
                 for (List<Integer> obj : OPS.get(oId).values()) {
                     c += obj.size();
@@ -313,6 +313,7 @@ public class RDFHexaStore implements RDFStorage {
                 return c;
             }
             return 0;
+
         }
 
         //------------- CAS 4 avec aucun lié -------------------

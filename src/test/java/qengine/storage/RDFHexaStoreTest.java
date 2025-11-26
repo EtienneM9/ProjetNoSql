@@ -95,16 +95,104 @@ public class RDFHexaStoreTest {
 
     @Test
     public void howMany() {
-        RDFHexaStore store = new RDFHexaStore();
-        store.add(new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1)); // RDFAtom(subject1, triple, object1)
-        store.add(new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_2)); // RDFAtom(subject2, triple, object2)
-        store.add(new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_3)); // RDFAtom(subject1, triple, object3)
+            // --- Initialisation des données pour le test ---
+            // On ajoute 3 triplets pour créer des motifs spécifiques :
+            // 1. (S1, P1, O1)
+            // 2. (S1, P1, O2)
+            // 3. (S2, P1, O1)
+            RDFHexaStore store = new RDFHexaStore();
 
-        // Case 1
-        RDFTriple matchingAtom = new RDFTriple(SUBJECT_1, PREDICATE_1, VAR_X); // RDFAtom(subject1, predicate1, X)
-        long nbr = store.howMany(matchingAtom);
 
-        assertEquals(2, nbr, "There should be two matched RDFAtoms");
+
+            RDFTriple t1 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1);
+            RDFTriple t2 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_2);
+            RDFTriple t3 = new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_1);
+
+            store.add(t1);
+            store.add(t2);
+            store.add(t3);
+
+            // Terme qui n'existe pas dans le store
+            Literal<String> UNKNOWN_TERM = SameObjectTermFactory.instance().createOrGetLiteral("unknown");
+
+        /* ---------------------------------------------------------
+           CAS 4 : 0 TERMES LIÉS (Tout est variable) -> size()
+           --------------------------------------------------------- */
+            // Doit retourner le nombre total de triplets (3)
+            assertEquals(3, store.howMany(new RDFTriple(VAR_X, VAR_Y, VAR_Z)),
+                    "Cas 4: ( ?x ?y ?z ) doit retourner la taille totale du store.");
+
+
+        /* ---------------------------------------------------------
+           CAS 3 : 1 TERME LIÉ (2 variables)
+           --------------------------------------------------------- */
+
+            // Cas 3A : Sujet fixé (S1 apparaît dans 2 triplets)
+            assertEquals(2, store.howMany(new RDFTriple(SUBJECT_1, VAR_Y, VAR_Z)),
+                    "Cas 3A: ( S1 ?y ?z ) -> attendu 2.");
+            // Test clé inexistante (Sujet inconnu)
+            assertEquals(0, store.howMany(new RDFTriple(UNKNOWN_TERM, VAR_Y, VAR_Z)),
+                    "Cas 3A (Inconnu): Sujet inexistant doit retourner 0.");
+
+            // Cas 3B : Prédicat fixé (P1 apparaît dans 3 triplets)
+            assertEquals(3, store.howMany(new RDFTriple(VAR_X, PREDICATE_1, VAR_Z)),
+                    "Cas 3B: ( ?x P1 ?z ) -> attendu 3.");
+            // Test clé inexistante (Prédicat inconnu)
+            assertEquals(0, store.howMany(new RDFTriple(VAR_X, UNKNOWN_TERM, VAR_Z)),
+                    "Cas 3B (Inconnu): Prédicat inexistant doit retourner 0.");
+
+            // Cas 3C : Objet fixé (O1 apparaît dans 2 triplets : avec S1 et S2)
+            assertEquals(2, store.howMany(new RDFTriple(VAR_X, VAR_Y, OBJECT_1)),
+                    "Cas 3C: ( ?x ?y O1 ) -> attendu 2.");
+            // Test clé inexistante (Objet inconnu)
+            assertEquals(0, store.howMany(new RDFTriple(VAR_X, VAR_Y, UNKNOWN_TERM)),
+                    "Cas 3C (Inconnu): Objet inexistant doit retourner 0.");
+
+
+        /* ---------------------------------------------------------
+           CAS 2 : 2 TERMES LIÉS (1 variable)
+           --------------------------------------------------------- */
+
+            // Cas 2A : Sujet et Prédicat fixés (S1, P1 -> O1 et O2)
+            assertEquals(2, store.howMany(new RDFTriple(SUBJECT_1, PREDICATE_1, VAR_Z)),
+                    "Cas 2A: ( S1 P1 ?z ) -> attendu 2.");
+            // Clé secondaire inexistante (S1 existe, mais pas avec P2)
+            assertEquals(0, store.howMany(new RDFTriple(SUBJECT_1, PREDICATE_2, VAR_Z)),
+                    "Cas 2A (Vide): Combinaison S1 + P2 inexistante doit retourner 0.");
+            // Clé primaire inexistante
+            assertEquals(0, store.howMany(new RDFTriple(UNKNOWN_TERM, PREDICATE_1, VAR_Z)),
+                    "Cas 2A (Inconnu): Sujet inconnu doit retourner 0.");
+
+            // Cas 2B : Sujet et Objet fixés (S1, O1 -> P1)
+            assertEquals(1, store.howMany(new RDFTriple(SUBJECT_1, VAR_Y, OBJECT_1)),
+                    "Cas 2B: ( S1 ?y O1 ) -> attendu 1.");
+            // Clé inexistante
+            assertEquals(0, store.howMany(new RDFTriple(SUBJECT_1, VAR_Y, OBJECT_3)),
+                    "Cas 2B (Vide): Combinaison S1 + O3 inexistante doit retourner 0.");
+
+            // Cas 2C : Prédicat et Objet fixés (P1, O1 -> S1 et S2)
+            assertEquals(2, store.howMany(new RDFTriple(VAR_X, PREDICATE_1, OBJECT_1)),
+                    "Cas 2C: ( ?x P1 O1 ) -> attendu 2.");
+            // Clé inexistante
+            assertEquals(0, store.howMany(new RDFTriple(VAR_X, PREDICATE_1, OBJECT_3)),
+                    "Cas 2C (Vide): Combinaison P1 + O3 inexistante doit retourner 0.");
+
+
+        /* ---------------------------------------------------------
+           CAS 1 : 3 TERMES LIÉS (Pas de variable) -> 1 ou 0
+           --------------------------------------------------------- */
+
+            // Le triplet existe
+            assertEquals(1, store.howMany(new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1)),
+                    "Cas 1: ( S1 P1 O1 ) existe -> attendu 1.");
+
+            // Le triplet n'existe pas (mais les termes existent individuellement)
+            assertEquals(0, store.howMany(new RDFTriple(SUBJECT_2, PREDICATE_1, OBJECT_2)),
+                    "Cas 1: ( S2 P1 O2 ) n'existe pas -> attendu 0.");
+
+            // Un des termes n'existe pas du tout
+            assertEquals(0, store.howMany(new RDFTriple(UNKNOWN_TERM, PREDICATE_1, OBJECT_1)),
+                    "Cas 1 (Inconnu): Avec terme inconnu -> attendu 0.");
     }
 
 
