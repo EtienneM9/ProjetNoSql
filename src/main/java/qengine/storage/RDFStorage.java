@@ -1,12 +1,11 @@
 package qengine.storage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import fr.boreal.model.logicalElements.api.Substitution;
+import fr.boreal.model.logicalElements.api.Term;
+import fr.boreal.model.logicalElements.api.Variable;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 
@@ -35,8 +34,63 @@ public interface RDFStorage {
      * @param q star query
      * @return an itérateur de subsitutions décrivrant les réponses à la requete
      */
-    Iterator<Substitution> match(StarQuery q);
+    default Iterator<Substitution> match(StarQuery q) {
+        List<RDFTriple> patterns = new ArrayList<>(q.getRdfAtoms());
 
+        //On trie les motifs par sélectivité
+        patterns.sort((t1, t2) -> Long.compare(this.howMany(t1), this.howMany(t2)));
+
+        if (patterns.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+
+        //Motif le plus sélectif
+        RDFTriple firstPattern = patterns.get(0);
+        Iterator<Substitution> candidates = this.match(firstPattern);
+
+        // Si un seul motif, on a fini
+        if (patterns.size() == 1) {
+            return candidates;
+        }
+
+        // Les autres motifs à vérifier
+        List<RDFTriple> remainingPatterns = patterns.subList(1, patterns.size());
+        Variable centralVar = q.getCentralVariable();
+
+        // Substitutions candidates
+        List<Substitution> results = new ArrayList<>();
+
+        while (candidates.hasNext()) {
+            Substitution sub = candidates.next();
+            Term centralValue = sub.toMap().get(centralVar);
+
+            // Vérifier si cette valeur permet de satisfaire TOUS les autres motifs
+            boolean matchesAll = true;
+            for (RDFTriple pattern : remainingPatterns) {
+
+                RDFTriple instantiatedTriple = substitute(pattern, centralVar, centralValue);
+
+                // Si le store ne contient pas ce triplet précis, ce candidat est invalide
+                if (this.howMany(instantiatedTriple) == 0) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                results.add(sub);
+            }
+        }
+
+        return results.iterator();
+    }
+
+    private RDFTriple substitute(RDFTriple t, Variable var, Term value) {
+        Term s = t.getTripleSubject().equals(var) ? value : t.getTripleSubject();
+        Term p = t.getTriplePredicate().equals(var) ? value : t.getTriplePredicate();
+        Term o = t.getTripleObject().equals(var) ? value : t.getTripleObject();
+        return new RDFTriple(s, p, o);
+    }
 
     /**
      * @param a atom
