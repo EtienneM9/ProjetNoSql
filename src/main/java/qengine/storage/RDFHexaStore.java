@@ -232,12 +232,6 @@ public class RDFHexaStore implements RDFStorage {
     }
 
     @Override
-    public Iterator<Substitution> match(StarQuery q) {
-        //TODO
-        throw new NotImplementedException();
-    }
-
-    @Override
     public long howMany(RDFTriple triple) {
         TermFactory termFactory = SameObjectTermFactory.instance();
 
