@@ -174,4 +174,127 @@ public abstract class AbstractStarQueryTest {
         }
         return count;
     }
+
+    @Test
+    public void testMatchCentralVariableInObjectPosition() {
+        setUp();
+        // Requete : Qui est aimé par Alice ? (SELECT ?x WHERE { Alice loves ?x })
+        // Pattern : <Alice, loves, ?x>
+        // Note : Ici ?x est en position OBJET
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(alice, loves, x)
+        );
+        StarQuery q = new StarQuery("Q_Obj", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+        List<Term> results = getResultsForVar(it, x);
+
+        assertEquals(1, results.size());
+        assertTrue(results.contains(sushi)); // Alice loves Sushi
+    }
+
+    @Test
+    public void testMatch_FilterRejectsSomeCandidates() {
+        setUp();
+        // But : Vérifier que le moteur filtre bien les candidats qui ne valident pas tous les patterns.
+        // Data : Alice (Paris), Bob (London), Charlie (Paris)
+        // Requête : Qui est une Personne ET vit à Paris ?
+
+        // Candidats initiaux pour "type Person" : Alice, Bob.
+        // Filtre "livesIn Paris" : Alice passe, Bob est rejeté (car Bob livesIn London).
+
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(x, type, person),
+                new RDFTriple(x, livesIn, paris)
+        );
+        StarQuery q = new StarQuery("Q_Filter_Partial", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+        List<Term> results = getResultsForVar(it, x);
+
+        assertEquals(1, results.size());
+        assertTrue(results.contains(alice));
+        // Ce test confirme que le if (howMany(...) == 0) a bien fonctionné pour Bob
+    }
+
+    @Test
+    public void testMatch_FilterRejectsAllCandidates() {
+        setUp();
+        // But : Vérifier que si aucun candidat ne passe le filtre, on renvoie vide.
+        // Requête : Qui est une Personne ET vit sur Mars ?
+
+        // Candidats initiaux "type Person" : Alice, Bob.
+        // Filtre "livesIn Mars" : Alice échoue, Bob échoue.
+
+        Literal mars = factory.createOrGetLiteral("Mars");
+
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(x, type, person),
+                new RDFTriple(x, livesIn, mars)
+        );
+        StarQuery q = new StarQuery("Q_Filter_All", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+
+        assertEquals(0, getResultsCount(it));
+    }
+
+    @Test
+    public void testMatchMixPosition() {
+        setUp();
+        // Cas complexe :
+        // 1. ?x est une Personne (Sujet)
+        // 2. Alice loves ?x (Objet) -> (Bon, Alice n'aime que les sushis qui ne sont pas une personne, le résultat sera vide, mais le test valide la logique)
+
+        // Changeons pour un cas qui marche :
+        // 1. ?x vit à Paris (Sujet) -> Alice, Charlie
+        // 2. ?x est de type Personne (Sujet) -> Alice, Bob
+        // Résultat : Alice.
+
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(x, livesIn, paris),
+                new RDFTriple(x, type, person)
+        );
+        StarQuery q = new StarQuery("Q_Mix", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+        List<Term> results = getResultsForVar(it, x);
+
+        assertEquals(1, results.size());
+        assertTrue(results.contains(alice));
+    }
+
+
+
+    @Test
+    public void testMatchImmediateEmptyResult() {
+        setUp();
+        // Requete avec un pattern qui n'existe pas du tout.
+        // <?x loves Bob> -> Personne n'aime Bob dans les données :(
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(x, loves, bob),
+                new RDFTriple(x, type, person)
+        );
+        StarQuery q = new StarQuery("Q_EmptyStart", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+        assertEquals(0, getResultsCount(it));
+    }
+
+    @Test
+    public void testMatchDisjointSets() {
+        setUp();
+        // Intersection vide entre deux ensembles non vides.
+        // A: Ceux qui vivent à Londres (Bob)
+        // B: Ceux qui sont Artistes (Charlie)
+        // A inter B = Vide.
+        List<RDFTriple> patterns = List.of(
+                new RDFTriple(x, livesIn, london),
+                new RDFTriple(x, type, artist)
+        );
+        StarQuery q = new StarQuery("Q_Disjoint", patterns, List.of(x));
+
+        Iterator<Substitution> it = storage.match(q);
+        assertEquals(0, getResultsCount(it));
+    }
 }

@@ -62,10 +62,6 @@ public class RDFGiantTable implements RDFStorage {
         return results.iterator();
     }
 
-    @Override
-    public Iterator<Substitution> match(StarQuery q) {
-        return null;
-    }
 
     @Override
     public long howMany(RDFTriple a) {
