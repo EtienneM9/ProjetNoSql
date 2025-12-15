@@ -19,16 +19,13 @@ This utility script (`clean_queries_audit.py`) automates the cleaning of `.query
 
 ## 🛠️ Usage
 
-### 1. Installation
-Save the python script as `clean_queries_audit.py` at the root of your project (or anywhere you prefer).
-
-### 2. Basic Usage
+### 1. Basic Usage
 By default, the script looks for a folder named `data` in the same directory as the script:
 
 ```bash
 python clean_queries_audit.py
 ```
-### 3. Custom Directory
+### 2. Custom Directory
 If your .queryset files are in a different folder, pass the path as an argument:
 
 ```bash
