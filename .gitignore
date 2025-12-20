@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+data/*.nt
+watdiv-mini-projet-partie-2/test.nt

@@ -20,6 +20,7 @@ def process_file(filepath):
     - Écrit deux fichiers de sortie (_clean et _removed).
     """
     filename = os.path.basename(filepath)
+    print(filename)
     
     # Évite de retraiter les fichiers déjà générés par ce script
     if filename.endswith("_clean.queryset") or filename.endswith("_removed.queryset"):
