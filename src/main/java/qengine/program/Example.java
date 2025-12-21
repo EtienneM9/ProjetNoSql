@@ -205,6 +205,8 @@ public final class Example {
 
 		System.out.println("GiantTable write time (ns): " + giantDuration);
 		System.out.println("HexaStore write time (ns): " + hexaDuration);
+		System.out.println("GiantTable is " + (double)hexaDuration/giantDuration + " times faster than HexaStore");
+
 
 		return List.of(giantDuration, hexaDuration);
 	}
@@ -238,7 +240,7 @@ public final class Example {
 				// System.err.println("Erreur requête GT : " + e.getMessage());
 			}
 		}
-		long timeGT = (System.nanoTime() - startGT) / 1_000_000; // Conversion en ms
+		long timeGT = (System.nanoTime() - startGT);
 
 		// --- MESURE POUR HEXASTORE ---
 		long startHS = System.nanoTime();
@@ -254,12 +256,14 @@ public final class Example {
 				// System.err.println("Erreur requête HS : " + e.getMessage());
 			}
 		}
-		long timeHS = (System.nanoTime() - startHS) / 1_000_000; // Conversion en ms
+		long timeHS = (System.nanoTime() - startHS);
 
 		// --- AFFICHAGE DES RÉSULTATS ---
 		System.out.println("\n=== RÉSULTATS DE LECTURE ===");
-		System.out.println("GiantTable : " + timeGT + " ms (Résultats trouvés : " + countGT + ")");
-		System.out.println("HexaStore  : " + timeHS + " ms (Résultats trouvés : " + countHS + ")");
+		System.out.println("GiantTable : " + timeGT + " ns (Résultats trouvés : " + countGT + ")");
+		System.out.println("HexaStore  : " + timeHS + " ns (Résultats trouvés : " + countHS + ")");
+		System.out.println("HexaStore is " + (double)timeGT/timeHS + " times faster than GiantTable");
+
 
 		// Petit check de cohérence (optionnel)
 		if (countGT != countHS) {
