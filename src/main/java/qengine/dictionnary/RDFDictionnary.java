@@ -10,8 +10,8 @@ public class RDFDictionnary {
     //Singleton pour garantir la cohérence entre plusieurs HexaStore
     private static RDFDictionnary instance = null;
 
-    private Map<Term, Integer> resourceToId = new HashMap<>();
-    private Map<Integer, Term> idToResource = new HashMap<>();
+    private static Map<Term, Integer> resourceToId = new HashMap<>();
+    private static Map<Integer, Term> idToResource = new HashMap<>();
     private int nextId = 0;
 
     private RDFDictionnary() {}

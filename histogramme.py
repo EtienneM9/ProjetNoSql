@@ -15,9 +15,9 @@ def generer_histogramme_vertical(categories, valeurs):
     bars = ax.bar(categories, valeurs, color='lightcoral', edgecolor='darkred')
 
     # Ajout de titres et de labels
-    ax.set_xlabel('Catégories (String)')
-    ax.set_ylabel('Valeurs (Long)')
-    ax.set_title('Histogramme à Bâtons Vertical')
+    ax.set_xlabel('RDFStorage')
+    ax.set_ylabel('Temps (ns)')
+    ax.set_title('Comparaison des temps d\'insertion pour Hexastore et GiantTable')
 
     # Ajout des valeurs au-dessus de chaque barre
     ax.bar_label(bars, padding=3, fmt='%d')
