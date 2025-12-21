@@ -14,10 +14,14 @@ import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
 import qengine.parser.RDFTriplesParser;
 import qengine.parser.StarQuerySparQLParser;
+import qengine.storage.RDFGiantTable;
+import qengine.storage.RDFHexaStore;
+import qengine.storage.RDFStorage;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,30 +30,41 @@ public final class Example {
 	private static final String WORKING_DIR = "data/";
 	private static final String SAMPLE_DATA_FILE = WORKING_DIR + "sample_data.nt";
 	private static final String SAMPLE_QUERY_FILE = WORKING_DIR + "sample_query.queryset";
+	private static final String FIRST_DATA_FILE = WORKING_DIR + "500K.nt";
+	private static final String SECOND_DATA_FILE = WORKING_DIR + "2M.nt";
+	private static final RDFStorage hexaStore = new RDFHexaStore();
+	private static final RDFStorage giantTable = new RDFGiantTable();
 
 	public static void main(String[] args) throws IOException {
 		/*
 		 * Exemple d'utilisation des deux parsers
 		 */
 		System.out.println("=== Parsing RDF Data ===");
-		List<RDFTriple> rdfAtoms = parseRDFData(SAMPLE_DATA_FILE);
+		//List<RDFTriple> rdfAtoms = parseRDFData(SAMPLE_DATA_FILE);
+		List<RDFTriple> rdfAtoms = parseRDFData(FIRST_DATA_FILE);
+		List<RDFTriple> rdfAtoms2 = parseRDFData(SECOND_DATA_FILE);
 
-		System.out.println("\n=== Parsing Sample Queries ===");
-		List<StarQuery> starQueries = parseSparQLQueries(SAMPLE_QUERY_FILE);
+//		System.out.println("\n=== Parsing Sample Queries ===");
+//		List<StarQuery> starQueries = parseSparQLQueries(SAMPLE_QUERY_FILE);
+
+		List<Long> firstWriteDurations = write(rdfAtoms);
+		List<Long> secondWriteDurations = write(rdfAtoms2);
+
+
 
 		/*
 		 * Exemple d'utilisation de l'évaluation de requetes par Integraal avec les objets parsés
 		 */
-		System.out.println("\n=== Executing the queries with Integraal ===");
-		FactBase factBase = new SimpleInMemoryGraphStore();
-		for (RDFTriple triple : rdfAtoms) {
-			factBase.add(triple);  // Stocker chaque RDFAtom dans le store
-		}
-
-		// Exécuter les requêtes sur le store
-		for (StarQuery starQuery : starQueries) {
-			executeStarQuery(starQuery, factBase);
-		}
+//		System.out.println("\n=== Executing the queries with Integraal ===");
+//		FactBase factBase = new SimpleInMemoryGraphStore();
+//		for (RDFTriple triple : rdfAtoms) {
+//			factBase.add(triple);  // Stocker chaque RDFAtom dans le store
+//		}
+//
+//		// Exécuter les requêtes sur le store
+//		for (StarQuery starQuery : starQueries) {
+//			executeStarQuery(starQuery, factBase);
+//		}
 	}
 
 	/**
@@ -124,5 +139,23 @@ public final class Example {
 			System.out.println(result); // Afficher chaque réponse
 		}
 		System.out.println();
+	}
+
+	private static List<Long> write(Collection<RDFTriple> triples){
+
+		long giantStart = System.nanoTime();
+		giantTable.addAll(triples);
+		long giantEnd = System.nanoTime();
+		long giantDuration = giantEnd - giantStart;
+
+		long hexaStart = System.nanoTime();
+		hexaStore.addAll(triples);
+		long hexaEnd = System.nanoTime();
+		long hexaDuration = hexaEnd - hexaStart;
+
+		System.out.println("GiantTable write time (ns): " + giantDuration);
+		System.out.println("HexaStore write time (ns): " + hexaDuration);
+
+		return (ArrayList<Long>)List.of(giantDuration, hexaDuration);
 	}
 }
