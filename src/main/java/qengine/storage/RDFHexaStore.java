@@ -86,7 +86,6 @@ public class RDFHexaStore implements RDFStorage {
         //séection de l'index selon les SOP connus
         //----------- CAS 1 avec trois liés -----------------
         if(sIsBound && oIsBound && pIsBound){
-            System.out.println(sId + " " + oId + " " + pId);
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(oId)){
                 //Ici le triplet exact existe mais pas de substitution à créer car pasde variable.
                 //On renvoie alors une substituion vide
@@ -97,7 +96,6 @@ public class RDFHexaStore implements RDFStorage {
         //------ CAS 2 avec deux liés -------------------
         else if(sIsBound && pIsBound){
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId)){
-                System.out.println(sId + " " + pId + " " + sIsBound);
                 //Ici, on connait S et P, mais il faut trouver les différentes substituions pour o
                 findMatchesAndSubstitute(substitutions, s, p, o, SPO.get(sId).get(pId), null, null, true);
             }
@@ -250,7 +248,6 @@ public class RDFHexaStore implements RDFStorage {
         //séection de l'index selon les SOP connus
         //----------- CAS 1 avec trois liés -----------------
         if(sIsBound && oIsBound && pIsBound){
-            System.out.println(sId + " " + oId + " " + pId);
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(oId)){
                 return 1;
             }

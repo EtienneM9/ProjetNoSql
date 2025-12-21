@@ -51,14 +51,13 @@ public final class Example {
 		System.out.println("\n=== Parsing Sample Queries ===");
 		List<StarQuery> starQueries = parseSparQLQueries(SAMPLE_QUERY_FILE);
 
-//		SyswarmUp(hexaStore, starQueries);
-//      SyswarmUp(giantTable, starQueries);
+		SyswarmUp(hexaStore, starQueries);
+	    SyswarmUp(giantTable, starQueries);
 
 		List<Long> firstWriteDurations = write(rdfAtoms);
 		List<Long> secondWriteDurations = write(rdfAtoms2);
 
-
-
+		benchmarkRead(giantTable, hexaStore, starQueries);
 		/*
 		 * Exemple d'utilisation de l'évaluation de requetes par Integraal avec les objets parsés
 		 */
@@ -218,7 +217,7 @@ public final class Example {
 	 * @param hexaStore  L'instance du HexaStore (doit contenir les données).
 	 * @param queries    La liste des requêtes StarQuery à exécuter.
 	 */
-	public static void benchmarkRead(RDFGiantTable giantTable, RDFHexaStore hexaStore, List<StarQuery> queries) {
+	public static void benchmarkRead(RDFStorage giantTable, RDFStorage hexaStore, List<StarQuery> queries) {
 		System.out.println("--- Démarrage du Benchmark de Lecture (Querying) ---");
 		System.out.println("Nombre de requêtes à exécuter : " + queries.size());
 
