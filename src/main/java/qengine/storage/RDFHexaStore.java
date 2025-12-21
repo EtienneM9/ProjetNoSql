@@ -39,6 +39,10 @@ public class RDFHexaStore implements RDFStorage {
         int o = dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
         int p = dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
 
+        if (!SPO.containsKey(s) && !SPO.get(s).containsKey(p) && !SPO.get(s).get(p).contains(o)){
+            return false; // Le triplet existe déjà, on ne fait rien
+        }
+
         // Ajout dans les 6 index
         addToIndex(SPO, s, p, o);
         addToIndex(SOP, s, o, p);
@@ -126,8 +130,8 @@ public class RDFHexaStore implements RDFStorage {
             }
         }
         else if(pIsBound) {
-            if (PSO.containsKey(pId)) {
-                for (var sEntry : PSO.get(pId).entrySet()) {
+            if (POS.containsKey(pId)) {
+                for (var sEntry : POS.get(pId).entrySet()) {
                     Term predMatch = dict.decode(sEntry.getKey());
                     for (int objId : sEntry.getValue()) {
                         Term objMatch = dict.decode(objId);
@@ -137,8 +141,8 @@ public class RDFHexaStore implements RDFStorage {
             }
         }
         else if(oIsBound){
-            if (OPS.containsKey(oId)) {
-                for (var oEntry : OPS.get(oId).entrySet()) {
+            if (OSP.containsKey(oId)) {
+                for (var oEntry : OSP.get(oId).entrySet()) {
                     Term predMatch = dict.decode(oEntry.getKey());
                     for (int objId : oEntry.getValue()) {
                         Term objMatch = dict.decode(objId);

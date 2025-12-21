@@ -84,7 +84,7 @@ public final class Example {
 	 * @param queries La liste complète des requêtes parsées.
 	 */
 	public static void SyswarmUp(RDFStorage store, List<StarQuery> queries) {
-		System.out.println("--- Démarrage du Warm-up (Chauffage JIT + Cache) ---");
+		System.out.println("\n--- Démarrage du Warm-up (Chauffage JIT + Cache) ---");
 
 		int limit = Math.min(queries.size(), 200);
 		int count = 0;
@@ -112,11 +112,12 @@ public final class Example {
 		System.gc();
 
 		System.out.println("--- Warm-up terminé (" + count + " requêtes jouées) ---");
-		System.out.println("Lancement de la mesure dans 1 seconde...");
+		System.out.println("\n Lancement de la mesure dans 1 seconde...");
 
 		// Petite pause pour laisser le système se stabiliser
 		try { Thread.sleep(1000); } catch (InterruptedException e) {}
 	}
+
 	/**
 	 * Parse et affiche le contenu d'un fichier RDF.
 	 *
@@ -134,7 +135,7 @@ public final class Example {
 				rdfAtoms.add(triple);  // Stocker le triplet dans la collection
 				System.out.println("RDF Triple #" + (++count) + ": " + triple);
 			}
-			System.out.println("Total RDF Triples parsed: " + count);
+			System.out.println("\n Total RDF Triples parsed: " + count);
 		}
 		return rdfAtoms;
 	}
@@ -203,7 +204,7 @@ public final class Example {
 		long hexaEnd = System.nanoTime();
 		long hexaDuration = hexaEnd - hexaStart;
 
-		System.out.println("GiantTable write time (ns): " + giantDuration);
+		System.out.println("\nGiantTable write time (ns): " + giantDuration);
 		System.out.println("HexaStore write time (ns): " + hexaDuration);
 		System.out.println("GiantTable is " + (double)hexaDuration/giantDuration + " times faster than HexaStore");
 
@@ -220,7 +221,7 @@ public final class Example {
 	 * @param queries    La liste des requêtes StarQuery à exécuter.
 	 */
 	public static void benchmarkRead(RDFStorage giantTable, RDFStorage hexaStore, List<StarQuery> queries) {
-		System.out.println("--- Démarrage du Benchmark de Lecture (Querying) ---");
+		System.out.println("\n--- Démarrage du Benchmark de Lecture (Querying) ---");
 		System.out.println("Nombre de requêtes à exécuter : " + queries.size());
 
 		// --- MESURE POUR GIANT TABLE ---

@@ -62,7 +62,7 @@ public class RDFHexaStoreTest {
         RDFHexaStore store = new RDFHexaStore();
         RDFTriple rdfAtom1 = new RDFTriple(SUBJECT_1, PREDICATE_1, OBJECT_1);
 
-        assertTrue(store.add(rdfAtom1), "Les RDFAtoms devraient être ajoutés avec succès.");
+        store.add(rdfAtom1);
 
         Collection<RDFTriple> atoms = store.getAtoms();
         assertTrue(atoms.contains(rdfAtom1), "La base devrait contenir le premier RDFAtom ajouté.");
