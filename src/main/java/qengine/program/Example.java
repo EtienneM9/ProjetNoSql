@@ -9,6 +9,7 @@ import fr.boreal.model.logicalElements.api.Substitution;
 import fr.boreal.model.queryEvaluation.api.FOQueryEvaluator;
 import fr.boreal.query_evaluation.generic.GenericFOQueryEvaluator;
 import fr.boreal.storage.natives.SimpleInMemoryGraphStore;
+import fr.boreal.views.builder.ViewBuilder;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import qengine.model.RDFTriple;
 import qengine.model.StarQuery;
@@ -20,6 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import qengine.storage.RDFStorage;
+
 
 public final class Example {
 
@@ -52,6 +56,50 @@ public final class Example {
 		}
 	}
 
+	/**
+	 * Warm up le systeme avant de lancer des tests .
+	 */
+	/**
+	 * Exécute un sous-ensemble de requêtes pour "chauffer" la JVM et le cache système.
+	 * Cette phase ne doit pas être chronométrée.
+	 *
+	 * @param store   Le système de stockage (déjà chargé).
+	 * @param queries La liste complète des requêtes parsées.
+	 */
+	public static void SyswarmUp(RDFStorage store, List<StarQuery> queries) {
+		System.out.println("--- Démarrage du Warm-up (Chauffage JIT + Cache) ---");
+
+		int limit = Math.min(queries.size(), 200);
+		int count = 0;
+
+		for (StarQuery q : queries) {
+			if (count >= limit) break;
+
+			try {
+				// 1. Appel de la méthode de résolution
+				Iterator<Substitution> it = store.match(q);
+
+				// 2. CONSOMMATION OBLIGATOIRE :
+				// Il faut parcourir l'itérateur pour forcer le moteur à calculer tous les résultats.
+				// Si on ne fait que l'appel .match(), certains moteurs "lazy" ne feront rien du tout.
+				while (it.hasNext()) {
+					it.next();
+				}
+			} catch (Exception e) {
+				// On ignore les erreurs silencieusement pendant le warm-up
+			}
+			count++;
+		}
+
+		// 3. Nettoyage final :
+		System.gc();
+
+		System.out.println("--- Warm-up terminé (" + count + " requêtes jouées) ---");
+		System.out.println("Lancement de la mesure dans 1 seconde...");
+
+		// Petite pause pour laisser le système se stabiliser
+		try { Thread.sleep(1000); } catch (InterruptedException e) {}
+	}
 	/**
 	 * Parse et affiche le contenu d'un fichier RDF.
 	 *
