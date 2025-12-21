@@ -48,8 +48,11 @@ public final class Example {
 		List<RDFTriple> rdfAtoms = parseRDFData(FIRST_DATA_FILE);
 		List<RDFTriple> rdfAtoms2 = parseRDFData(SECOND_DATA_FILE);
 
-//		System.out.println("\n=== Parsing Sample Queries ===");
-//		List<StarQuery> starQueries = parseSparQLQueries(SAMPLE_QUERY_FILE);
+		System.out.println("\n=== Parsing Sample Queries ===");
+		List<StarQuery> starQueries = parseSparQLQueries(SAMPLE_QUERY_FILE);
+
+//		SyswarmUp(hexaStore, starQueries);
+//      SyswarmUp(giantTable, starQueries);
 
 		List<Long> firstWriteDurations = write(rdfAtoms);
 		List<Long> secondWriteDurations = write(rdfAtoms2);
@@ -204,6 +207,68 @@ public final class Example {
 		System.out.println("GiantTable write time (ns): " + giantDuration);
 		System.out.println("HexaStore write time (ns): " + hexaDuration);
 
-		return (ArrayList<Long>)List.of(giantDuration, hexaDuration);
+		return List.of(giantDuration, hexaDuration);
 	}
+
+	/**
+	 * Compare les performances de lecture (Querying) entre GiantTable et HexaStore.
+	 * Cette méthode exécute toutes les requêtes fournies sur les deux systèmes.
+	 *
+	 * @param giantTable L'instance de la GiantTable (doit contenir les données).
+	 * @param hexaStore  L'instance du HexaStore (doit contenir les données).
+	 * @param queries    La liste des requêtes StarQuery à exécuter.
+	 */
+	public static void benchmarkRead(RDFGiantTable giantTable, RDFHexaStore hexaStore, List<StarQuery> queries) {
+		System.out.println("--- Démarrage du Benchmark de Lecture (Querying) ---");
+		System.out.println("Nombre de requêtes à exécuter : " + queries.size());
+
+		// --- MESURE POUR GIANT TABLE ---
+		long startGT = System.nanoTime();
+		int countGT = 0;
+		for (StarQuery q : queries) {
+			try {
+				// On récupère l'itérateur de résultats
+				Iterator<Substitution> it = giantTable.match(q);
+				// IMPORTANT : Il faut consommer l'itérateur pour que le moteur cherche vraiment les résultats
+				while (it.hasNext()) {
+					it.next();
+					countGT++;
+				}
+			} catch (Exception e) {
+				// On peut logger l'erreur ou l'ignorer pour ne pas stopper le benchmark
+				// System.err.println("Erreur requête GT : " + e.getMessage());
+			}
+		}
+		long timeGT = (System.nanoTime() - startGT) / 1_000_000; // Conversion en ms
+
+		// --- MESURE POUR HEXASTORE ---
+		long startHS = System.nanoTime();
+		int countHS = 0;
+		for (StarQuery q : queries) {
+			try {
+				Iterator<Substitution> it = hexaStore.match(q);
+				while (it.hasNext()) {
+					it.next();
+					countHS++;
+				}
+			} catch (Exception e) {
+				// System.err.println("Erreur requête HS : " + e.getMessage());
+			}
+		}
+		long timeHS = (System.nanoTime() - startHS) / 1_000_000; // Conversion en ms
+
+		// --- AFFICHAGE DES RÉSULTATS ---
+		System.out.println("\n=== RÉSULTATS DE LECTURE ===");
+		System.out.println("GiantTable : " + timeGT + " ms (Résultats trouvés : " + countGT + ")");
+		System.out.println("HexaStore  : " + timeHS + " ms (Résultats trouvés : " + countHS + ")");
+
+		// Petit check de cohérence (optionnel)
+		if (countGT != countHS) {
+			System.err.println("/!\\ ATTENTION : Les deux systèmes n'ont pas retourné le même nombre de résultats !");
+		} else {
+			System.out.println("Validité : OK (Même nombre de résultats)");
+		}
+		System.out.println("============================");
+	}
+
 }
