@@ -39,8 +39,12 @@ public class RDFHexaStore implements RDFStorage {
         int o = dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
         int p = dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
 
-        if (!SPO.containsKey(s) && !SPO.get(s).containsKey(p) && !SPO.get(s).get(p).contains(o)){
+        if (!SPO.containsKey(s)){
             return false; // Le triplet existe déjà, on ne fait rien
+        } else if (!SPO.get(s).containsKey(p)) {
+            return false;
+        } else if (!SPO.get(s).get(p).contains(o)) {
+            return false;
         }
 
         // Ajout dans les 6 index
@@ -91,7 +95,7 @@ public class RDFHexaStore implements RDFStorage {
         //----------- CAS 1 avec trois liés -----------------
         if(sIsBound && oIsBound && pIsBound){
             if(SPO.containsKey(sId) && SPO.get(sId).containsKey(pId) && SPO.get(sId).get(pId).contains(oId)){
-                //Ici le triplet exact existe mais pas de substitution à créer car pasde variable.
+                //Ici le triplet exact existe mais pas de substitution à créer car pas de variable.
                 //On renvoie alors une substituion vide
                 substitutions.add(new SubstitutionImpl());
             }
@@ -106,13 +110,13 @@ public class RDFHexaStore implements RDFStorage {
         }
         else if(sIsBound && oIsBound){
             if(SOP.containsKey(sId) && SOP.get(sId).containsKey(oId)){
-                //Ici, on connait S et O, mais il faut trouver les différentes substituions pour o
+                //Ici, on connait S et O, mais il faut trouver les différentes substituions pour p
                 findMatchesAndSubstitute(substitutions, s, p, o, SOP.get(sId).get(oId), null, true, null);
             }
         }
         else if(oIsBound && pIsBound){
             if(OPS.containsKey(oId) && OPS.get(oId).containsKey(pId)){
-                //Ici, on connait S et P, mais il faut trouver les différentes substituions pour o
+                //Ici, on connait O et P, mais il faut trouver les différentes substituions pour s
                 findMatchesAndSubstitute(substitutions, s, p, o, OPS.get(oId).get(pId), true, null, null);
             }
         }
@@ -153,7 +157,6 @@ public class RDFHexaStore implements RDFStorage {
         }
 
         //------------- CAS 4 avec aucun lié -------------------
-
         else{
             //On fait un scan complet pour trouver les substitutions adapté
             for (var sEntry : SPO.entrySet()) {
