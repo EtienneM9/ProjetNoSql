@@ -231,7 +231,7 @@ public final class Example {
 			try {
 				// On récupère l'itérateur de résultats
 				Iterator<Substitution> it = giantTable.match(q);
-				// IMPORTANT : Il faut consommer l'itérateur pour que le moteur cherche vraiment les résultats
+				//Il faut consommer l'itérateur pour que le moteur cherche vraiment les résultats
 				while (it.hasNext()) {
 					it.next();
 					countGT++;
@@ -266,7 +266,6 @@ public final class Example {
 		System.out.println("HexaStore is " + (double)timeGT/timeHS + " times faster than GiantTable");
 
 
-		// Petit check de cohérence (optionnel)
 		if (countGT != countHS) {
 			System.err.println("/!\\ ATTENTION : Les deux systèmes n'ont pas retourné le même nombre de résultats !");
 		} else {

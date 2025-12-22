@@ -34,7 +34,7 @@ def generer_histogramme_vertical(categories, valeurs):
 # --- Exemple d'utilisation ---
 
 # Vos données
-labels = ["GiantTable 500K", "Hexastore 500K", "GiantTable 2M", "Hexastore 2M"]
-donnees_long = [75337666, 383483742, 444090983, 2973148967]
+labels = ["GiantTable", "Hexastore"]
+donnees_long = [7702836636, 1064660]
 
 generer_histogramme_vertical(labels, donnees_long)
