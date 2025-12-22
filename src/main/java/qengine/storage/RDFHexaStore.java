@@ -39,12 +39,8 @@ public class RDFHexaStore implements RDFStorage {
         int o = dict.encode(termFactory.createOrGetLiteral(triple.getTripleObject().toString()));
         int p = dict.encode(termFactory.createOrGetLiteral(triple.getTriplePredicate().toString()));
 
-        if (!SPO.containsKey(s)){
+        if (SPO.containsKey(s) && SPO.get(s).containsKey(p) && SPO.get(s).get(p).contains(o)){
             return false; // Le triplet existe déjà, on ne fait rien
-        } else if (!SPO.get(s).containsKey(p)) {
-            return false;
-        } else if (!SPO.get(s).get(p).contains(o)) {
-            return false;
         }
 
         // Ajout dans les 6 index
