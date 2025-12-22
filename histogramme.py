@@ -8,7 +8,7 @@ def generer_histogramme_vertical(categories, valeurs):
     """
 
     # Création de la figure
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
 
     # Utilisation de bar() pour un affichage vertical
     # X = catégories, Y = valeurs

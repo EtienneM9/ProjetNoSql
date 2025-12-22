@@ -62,18 +62,6 @@ public class RDFGiantTable implements RDFStorage {
         return results.iterator();
     }
 
-
-    @Override
-    public long howMany(RDFTriple a) {
-        Iterator<Substitution> it = match(a);
-        int res = 0;
-        while (it.hasNext()) {
-            res++;
-            it.next();
-        }
-        return res;
-    }
-
     @Override
     public long size() {
         return triples.size();
